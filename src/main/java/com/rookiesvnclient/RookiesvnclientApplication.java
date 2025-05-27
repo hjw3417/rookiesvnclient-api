@@ -31,22 +31,14 @@ import java.util.List;
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) // DB 연결 막기
 public class RookiesvnclientApplication implements CommandLineRunner {
 
-	@Autowired
-	private SvnReaderService svnReaderService;
-
 	public static void main(String[] args) {
 		SpringApplication.run(RookiesvnclientApplication.class, args);
+		System.out.println("RookiesvnclientApplication 실행 성공했음요!");
 	}
 
 	@Override
 	public void run(String... args) {
-		try {
-			List<String> folderPaths = List.of("SMMES/QMS/FQMS_QMM120", "SHMST_DEV/QMS/FQMS_QMM120", "MASUNGMES/QMS/FQMS_QMM120"); // 폴더 여러개
-			svnReaderService.testConnection();
-			svnReaderService.fetchLogs(folderPaths, 2);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+
 	}
 }
 

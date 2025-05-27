@@ -24,6 +24,7 @@ public class JwtUtil {
 
     // JWT 토큰 생성
     public String generateToken(String username) {
+        System.out.println("[JwtUtil] generateToken 호출됨");
         return Jwts.builder()
                 .setSubject(username) // 보통 username (ID)
                 .setIssuedAt(new Date())
@@ -34,7 +35,9 @@ public class JwtUtil {
 
     // JWT 토큰 검증 및 사용자 ID 추출
     public String validateAndExtractUsername(String token) {
+        System.out.println("[JwtUtil] validateAndExtractUsername 호출됨");
         try {
+            System.out.println("[JwtUtil] validateAndExtractUsername try 블록 진입");
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
@@ -42,6 +45,7 @@ public class JwtUtil {
                     .getBody();
             return claims.getSubject();
         } catch (JwtException | IllegalArgumentException e) {
+            System.out.println("[JwtUtil] validateAndExtractUsername catch 블록 진입");
             throw new RuntimeException("Invalid JWT token");
         }
     }

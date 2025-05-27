@@ -1,44 +1,48 @@
 package com.rookiesvnclient.controller;
 
-import com.rookiesvnclient.dto.LoginRequestDto;
+import com.rookiesvnclient.dto.auth.LoginRequestDto;
 import com.rookiesvnclient.jwt.JwtUtil;
+import com.rookiesvnclient.service.LoginService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * SVN 로그인 요청을 처리하는 컨트롤러입니다.
+ */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class LoginController {
 
+    private final LoginService loginService;
     private final JwtUtil jwtUtil;
-    @Value("${svn.url}")
-    private String svnUrl;
-    // 🔥 SVN 서버 URL (추후 Config로 뺄 수 있음)
-//    private String SVN_URL =  svnUrl;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequestDto request) throws SVNException {
-        // SVN 서버 접속 시도
-        DAVRepositoryFactory.setup();
-        SVNRepository repository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(svnUrl));
-        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(
-                request.getUsername(),
-                request.getPassword()
-        );
-        repository.setAuthenticationManager(authManager);
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
+        System.out.println("login 진입!");
 
-        // 리비전 조회 시도 (실제 SVN 인증 확인)
-        repository.getLatestRevision();
+        try {
+            // 모든 서버 인증 성공 시 캐시에 저장
+            loginService.authenticateAndCache(request.getUsername(), request.getPassword());
 
-        // 접속 성공하면 JWT 발급
-        return jwtUtil.generateToken(request.getUsername());
+            String token = jwtUtil.generateToken(request.getUsername());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            result.put("username", request.getUsername());
+            return ResponseEntity.ok(result);
+
+        } catch (SVNException e) {
+            System.out.println("[LoginController] login 실패: " + e.getMessage());
+            return ResponseEntity.status(401).body("SVN 인증 실패");
+        } catch (Exception e) {
+            System.out.println("[LoginController] login 실패: " + e.getMessage());
+            return ResponseEntity.status(500).body("서버 오류: " + e.getMessage());
+        }
     }
 }

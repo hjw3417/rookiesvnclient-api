@@ -1,6 +1,6 @@
 package com.rookiesvnclient.cache;
 
-import com.rookiesvnclient.dto.SvnCredentials;
+import com.rookiesvnclient.dto.svn.SvnCredentials;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
